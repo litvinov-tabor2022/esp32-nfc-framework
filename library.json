@@ -1,0 +1,41 @@
+{
+  "name": "ESP32+NFC framework",
+  "version": "0.1.1",
+  "description": "Library for easy integration of ESP32+NFC",
+  "keywords": "nfc,tag,reader,esp32",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/litvinov-tabor2022/esp32-nfc-framework.git"
+  },
+  "authors": [
+    {
+      "name": "Jan Kolena"
+    },
+    {
+      "name": "Matěj jehlička"
+    }
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "vshymanskyy/StreamDebugger": "^1.0.1",
+    "jandrassy/TelnetStream": "^1.2.1",
+    "jendakol/ESPx NFC tag reader library": "^0.1.1"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "headers": [
+    "ESP32NFC.h",
+    "HwLocks.h",
+    "HwAccessPoint.h",
+    "Tasker.h"
+  ],
+  "platforms": [
+    "espressif32"
+  ],
+  "export": {
+    "include": [
+      "src/*"
+    ]
+  }
+}
