@@ -5,4 +5,5 @@ cmake-build-*/
 CMakeLists.txt
 dist
 platformio.ini
+src/main.cpp
 

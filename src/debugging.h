@@ -1,5 +1,5 @@
-#ifndef ESP32_NFC_DEBUGGING_H
-#define ESP32_NFC_DEBUGGING_H
+#ifndef ESP32_PORTAL_DEBUGGING_H
+#define ESP32_PORTAL_DEBUGGING_H
 
 #include "Arduino.h"
 #include "StreamDebugger.h"
@@ -7,4 +7,4 @@
 
 extern StreamDebugger Debug;
 
-#endif //ESP32_NFC_DEBUGGING_H
+#endif //ESP32_PORTAL_DEBUGGING_H

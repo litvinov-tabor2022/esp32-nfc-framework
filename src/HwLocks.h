@@ -1,5 +1,5 @@
-#ifndef ESP32_NFC_HWLOCKS_H
-#define ESP32_NFC_HWLOCKS_H
+#ifndef ESP32_PORTAL_HWLOCKS_H
+#define ESP32_PORTAL_HWLOCKS_H
 
 #include <mutex>
 
@@ -10,4 +10,4 @@ public:
     static std::mutex SPI;
 };
 
-#endif //ESP32_NFC_HWLOCKS_H
+#endif //ESP32_PORTAL_HWLOCKS_H

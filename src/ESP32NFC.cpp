@@ -1,17 +1,25 @@
+#include <ESP32NFC.h>
+#include <MFRCTagReader.h>
+#include <utils.h>
 
+#include <pb_decode.h>
+#include <pb_encode.h>
 
-#include "ESP32NFC.h"
+#define BUFFER_SIZE 32 // don't have this uselessly big
+byte rawTagData[BUFFER_SIZE];
 
-bool ESP32NFC::begin(const char *ssid, const char *password) {
+bool ESP32NFC::begin() {
     if (!reader.begin()) {
         Debug.println("Could not initialize tag reader!");
         return false;
     }
 
-    Core0.once("AP start", [ssid, password] {
-        Debug.println("Starting AP...");
-        AccessPoint::start(ssid, password);
-        TelnetPrint.begin();
+    reader.addOnConnectCallback([this](const byte *uid) {
+        const String uidStr = hexStr(uid, MFRC_UID_LENGTH);
+
+        Core0.once("handleConnTag", [this, uidStr]() {
+            handleConnectedTag(uidStr);
+        });
     });
 
     Core1.loopEvery("rfid", 50, [this] {
@@ -30,4 +38,90 @@ bool ESP32NFC::write(byte *data, int size) {
 bool ESP32NFC::read(byte *byte, int size) {
     std::lock_guard<std::mutex> lg(HwLocks::SPI);
     return reader.read(byte, size);
+}
+
+void ESP32NFC::handleConnectedTag(const String &uid) {
+    Debug.println("--------------------------");
+    Debug.printf("Handling new connected tag, UID %s\n", uid.c_str());
+
+    PlayerData playerData = portal_PlayerData_init_zero;
+    if (readPlayerData(&playerData)) {
+        if (reader.isTagConnected()) {
+            for (auto &callback: tagConnectedCallbacks) callback(playerData);
+        } else {
+            Debug.println("Tag disconnected during reading, quit");
+            return;
+        }
+    } else {
+        Debug.println("Tag can't be read, quit");
+        onErrorMessage(new String("Chyba cteni tagu!"));
+        return;
+    }
+}
+
+bool ESP32NFC::initializeTag() {
+    PlayerData playerData = portal_PlayerData_init_zero;
+
+    Serial.println("--------------------------------------------------------------------");
+    Debug.println("Initializing tag to default values");
+
+    strcpy(playerData.secret, TagSecret.c_str());
+    do {
+        playerData.user_id = esp_random() % 0xff; // random ID
+    } while (playerData.user_id == ADMIN_USER_ID); // ensure it doesn't collide
+
+    playerData.strength = 0;
+    playerData.magic = 0;
+    playerData.dexterity = 0;
+
+    if (!writePlayerData(playerData)) {
+        Debug.println("Can't initialize the tag!");
+        return false;
+    }
+
+    return true;
+}
+
+bool ESP32NFC::writePlayerData(_portal_PlayerData &playerData) {
+    pb_ostream_t os = pb_ostream_from_buffer(rawTagData, BUFFER_SIZE);
+
+    if (!pb_encode_delimited(&os, portal_PlayerData_fields, &playerData)) {
+        Debug.printf("Encoding player data failed: %s\n", PB_GET_ERROR(&os));
+        return false;
+    }
+
+    const u8 size = os.bytes_written;
+
+    if (size > BUFFER_SIZE) {
+        Debug.println("!!!\n!!!\nWriting more data than fits the buffer!!!\n!!!\n!!!");
+    }
+
+    if (!reader.write(rawTagData, size)) {
+        Debug.println("Could not write data to tag!");
+        return false;
+    }
+
+    return true;
+}
+
+bool ESP32NFC::readPlayerData(_portal_PlayerData *playerData) {
+    if (!reader.read(rawTagData, BUFFER_SIZE)) {
+        Debug.println("Can't read data from tag or not all data was read");
+        return false;
+    }
+
+    pb_istream_t stream = pb_istream_from_buffer(rawTagData, BUFFER_SIZE);
+
+    if (!pb_decode_delimited(&stream, portal_PlayerData_fields, playerData)) {
+        Debug.printf("Decoding player data failed: %s\n", PB_GET_ERROR(&stream));
+        return false;
+    }
+
+    // check secret, so we can be sure it's really our tag...
+    if (strcmp(TagSecret.c_str(), playerData->secret) != 0) {
+        Debug.println("Tag secret doesn't match!");
+        return false;
+    }
+
+    return true;
 }
