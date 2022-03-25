@@ -1,5 +1,5 @@
-#ifndef ESP32_PORTAL_FRAMEWORK_UPDATEOTA_H
-#define ESP32_PORTAL_FRAMEWORK_UPDATEOTA_H
+#ifndef ESP32_PORTAL_UPDATEOTA_H
+#define ESP32_PORTAL_UPDATEOTA_H
 
 #include <ArduinoOTA.h>
 #include <debugging.h>
@@ -32,4 +32,4 @@ void setupOTA() {
             });
 }
 
-#endif //ESP32_PORTAL_FRAMEWORK_UPDATEOTA_H
+#endif //ESP32_PORTAL_UPDATEOTA_H

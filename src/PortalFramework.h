@@ -1,5 +1,5 @@
-#ifndef ESP32_PORTAL_FRAMEWORK_ESP32NFC_H
-#define ESP32_PORTAL_FRAMEWORK_ESP32NFC_H
+#ifndef ESP32_PORTAL_PORTALFRAMEWORK_H
+#define ESP32_PORTAL_PORTALFRAMEWORK_H
 
 #include <types.h>
 #include <Tasker.h>
@@ -20,7 +20,7 @@ static const std::string TagSecret = "$1$gJvI";
 
 typedef portal_PlayerData PlayerData;
 
-class ESP32NFC {
+class PortalFramework {
 
 public:
     bool begin();
@@ -57,4 +57,4 @@ private:
 };
 
 
-#endif //ESP32_PORTAL_FRAMEWORK_ESP32NFC_H
+#endif //ESP32_PORTAL_PORTALFRAMEWORK_H

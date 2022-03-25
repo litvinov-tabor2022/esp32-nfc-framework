@@ -1,5 +1,5 @@
-#ifndef PORTAL_UTILS_H
-#define PORTAL_UTILS_H
+#ifndef ESP32_PORTAL_UTILS_H
+#define ESP32_PORTAL_UTILS_H
 
 #include "Arduino.h"
 

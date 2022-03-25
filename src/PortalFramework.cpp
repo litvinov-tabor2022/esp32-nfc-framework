@@ -1,4 +1,4 @@
-#include <ESP32NFC.h>
+#include <PortalFramework.h>
 #include <MFRCTagReader.h>
 #include <utils.h>
 
@@ -8,7 +8,7 @@
 #define BUFFER_SIZE 32 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
-bool ESP32NFC::begin() {
+bool PortalFramework::begin() {
     if (!reader.begin()) {
         Debug.println("Could not initialize tag reader!");
         return false;
@@ -30,17 +30,17 @@ bool ESP32NFC::begin() {
     return true;
 }
 
-bool ESP32NFC::write(byte *data, int size) {
+bool PortalFramework::write(byte *data, int size) {
     std::lock_guard<std::mutex> lg(HwLocks::SPI);
     return reader.write(data, size);
 }
 
-bool ESP32NFC::read(byte *byte, int size) {
+bool PortalFramework::read(byte *byte, int size) {
     std::lock_guard<std::mutex> lg(HwLocks::SPI);
     return reader.read(byte, size);
 }
 
-void ESP32NFC::handleConnectedTag(const String &uid) {
+void PortalFramework::handleConnectedTag(const String &uid) {
     Debug.println("--------------------------");
     Debug.printf("Handling new connected tag, UID %s\n", uid.c_str());
 
@@ -59,7 +59,7 @@ void ESP32NFC::handleConnectedTag(const String &uid) {
     }
 }
 
-bool ESP32NFC::initializeTag() {
+bool PortalFramework::initializeTag() {
     PlayerData playerData = portal_PlayerData_init_zero;
 
     Serial.println("--------------------------------------------------------------------");
@@ -82,7 +82,7 @@ bool ESP32NFC::initializeTag() {
     return true;
 }
 
-bool ESP32NFC::writePlayerData(_portal_PlayerData &playerData) {
+bool PortalFramework::writePlayerData(_portal_PlayerData &playerData) {
     pb_ostream_t os = pb_ostream_from_buffer(rawTagData, BUFFER_SIZE);
 
     if (!pb_encode_delimited(&os, portal_PlayerData_fields, &playerData)) {
@@ -104,7 +104,7 @@ bool ESP32NFC::writePlayerData(_portal_PlayerData &playerData) {
     return true;
 }
 
-bool ESP32NFC::readPlayerData(_portal_PlayerData *playerData) {
+bool PortalFramework::readPlayerData(_portal_PlayerData *playerData) {
     if (!reader.read(rawTagData, BUFFER_SIZE)) {
         Debug.println("Can't read data from tag or not all data was read");
         return false;
