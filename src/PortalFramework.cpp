@@ -14,6 +14,16 @@ bool PortalFramework::begin() {
         return false;
     }
 
+    if (!storage.begin()) {
+        Debug.println("Could not initialize transactions log!");
+        return false;
+    }
+
+    if (!clocks.begin()) {
+        Debug.println("Could not initialize RTC!");
+        return false;
+    }
+
     reader.addOnConnectCallback([this](const byte *uid) {
         const String uidStr = hexStr(uid, MFRC_UID_LENGTH);
 
