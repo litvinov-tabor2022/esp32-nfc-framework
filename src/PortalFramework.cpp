@@ -9,9 +9,12 @@
 byte rawTagData[BUFFER_SIZE];
 
 bool PortalFramework::begin() {
-    if (!reader.begin()) {
-        Debug.println("Could not initialize tag reader!");
-        return false;
+    {
+        std::lock_guard<std::mutex> lg(HwLocks::SPI);
+        if (!reader.begin()) {
+            Debug.println("Could not initialize tag reader!");
+            return false;
+        }
     }
 
     if (!storage.begin()) {
@@ -27,9 +30,11 @@ bool PortalFramework::begin() {
     reader.addOnConnectCallback([this](const byte *uid) {
         const String uidStr = hexStr(uid, MFRC_UID_LENGTH);
 
-        Core0.once("handleConnTag", [this, uidStr]() {
-            handleConnectedTag(uidStr);
-        });
+        if (reader.isTagConnected()) {
+            Core0.once("handleConnTag", [this, uidStr]() {
+                handleConnectedTag(uidStr);
+            });
+        }
     });
 
     Core1.loopEvery("rfid", 50, [this] {
@@ -38,16 +43,6 @@ bool PortalFramework::begin() {
     });
 
     return true;
-}
-
-bool PortalFramework::write(byte *data, int size) {
-    std::lock_guard<std::mutex> lg(HwLocks::SPI);
-    return reader.write(data, size);
-}
-
-bool PortalFramework::read(byte *byte, int size) {
-    std::lock_guard<std::mutex> lg(HwLocks::SPI);
-    return reader.read(byte, size);
 }
 
 void PortalFramework::handleConnectedTag(const String &uid) {
@@ -106,16 +101,19 @@ bool PortalFramework::writePlayerData(_portal_PlayerData &playerData) {
         Debug.println("!!!\n!!!\nWriting more data than fits the buffer!!!\n!!!\n!!!");
     }
 
-    if (!reader.write(rawTagData, size)) {
+    if (!nfcWrite(rawTagData, size)) {
         Debug.println("Could not write data to tag!");
         return false;
     }
+
+    // update data everywhere!
+    for (auto &callback: tagConnectedCallbacks) callback(playerData);
 
     return true;
 }
 
 bool PortalFramework::readPlayerData(_portal_PlayerData *playerData) {
-    if (!reader.read(rawTagData, BUFFER_SIZE)) {
+    if (!nfcRead(rawTagData, BUFFER_SIZE)) {
         Debug.println("Can't read data from tag or not all data was read");
         return false;
     }
@@ -135,3 +133,14 @@ bool PortalFramework::readPlayerData(_portal_PlayerData *playerData) {
 
     return true;
 }
+
+bool PortalFramework::nfcWrite(byte *data, int size) {
+    std::lock_guard<std::mutex> lg(HwLocks::SPI);
+    return reader.write(data, size);
+}
+
+bool PortalFramework::nfcRead(byte *byte, int size) {
+    std::lock_guard<std::mutex> lg(HwLocks::SPI);
+    return reader.read(byte, size);
+}
+

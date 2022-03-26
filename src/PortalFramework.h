@@ -44,9 +44,9 @@ public:
 private:
     bool readPlayerData(PlayerData *playerData);
 
-    bool write(byte *data, int size);
+    bool nfcWrite(byte *data, int size);
 
-    bool read(byte *byte, int size);
+    bool nfcRead(byte *byte, int size);
 
     void handleConnectedTag(const String &uid);
 
