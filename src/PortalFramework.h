@@ -13,6 +13,8 @@
 #define NFC_PIN_RST 25
 
 #include <MFRCTagReader.h>
+#include <Storage.h>
+#include <Clocks.h>
 
 static const std::string TagSecret = "$1$gJvI";
 
@@ -37,6 +39,8 @@ public:
 
     bool writePlayerData(PlayerData &playerData);
 
+    Storage storage;
+    Clocks clocks;
 private:
     bool readPlayerData(PlayerData *playerData);
 
