@@ -16,6 +16,7 @@ bool Storage::appendTransaction(const Transaction &transaction) {
     doc["magic"] = transaction.magic;
     doc["dexterity"] = transaction.dexterity;
     doc["bonus_points"] = transaction.bonus_points;
+    doc["skill"] = transaction.skill;
 
     File file = SPIFFS.open(COMMITLOG_FILE, FILE_APPEND);
 
@@ -41,7 +42,7 @@ bool Storage::appendTransaction(const Transaction &transaction) {
 
 bool Storage::begin() {
 
-    if(!SPIFFS.begin(false)){
+    if (!SPIFFS.begin(false)) {
         Serial.println("An Error has occurred while mounting SPIFFS");
         return false;
     }

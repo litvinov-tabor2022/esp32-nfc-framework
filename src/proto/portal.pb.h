@@ -9,6 +9,14 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+/* Enum definitions */
+typedef enum _portal_Skill { 
+    portal_Skill_Skill_Default = 0, 
+    portal_Skill_Skill_Climbing = 1, 
+    portal_Skill_Skill_LockPicking = 2, 
+    portal_Skill_Magic_Fire = 101 
+} portal_Skill;
+
 /* Struct definitions */
 typedef struct _portal_PlayerData { 
     char secret[8]; 
@@ -16,7 +24,16 @@ typedef struct _portal_PlayerData {
     uint32_t strength; 
     uint32_t magic; 
     uint32_t dexterity; 
+    uint32_t bonus_points; 
+    pb_size_t skills_count;
+    portal_Skill skills[10]; 
 } portal_PlayerData;
+
+
+/* Helper constants for enums */
+#define _portal_Skill_MIN portal_Skill_Skill_Default
+#define _portal_Skill_MAX portal_Skill_Magic_Fire
+#define _portal_Skill_ARRAYSIZE ((portal_Skill)(portal_Skill_Magic_Fire+1))
 
 
 #ifdef __cplusplus
@@ -24,8 +41,8 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define portal_PlayerData_init_default           {"", 0, 0, 0, 0}
-#define portal_PlayerData_init_zero              {"", 0, 0, 0, 0}
+#define portal_PlayerData_init_default           {"", 0, 0, 0, 0, 0, 0, {_portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN}}
+#define portal_PlayerData_init_zero              {"", 0, 0, 0, 0, 0, 0, {_portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN, _portal_Skill_MIN}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define portal_PlayerData_secret_tag             1
@@ -33,6 +50,8 @@ extern "C" {
 #define portal_PlayerData_strength_tag           3
 #define portal_PlayerData_magic_tag              4
 #define portal_PlayerData_dexterity_tag          5
+#define portal_PlayerData_bonus_points_tag       6
+#define portal_PlayerData_skills_tag             10
 
 /* Struct field encoding specification for nanopb */
 #define portal_PlayerData_FIELDLIST(X, a) \
@@ -40,7 +59,9 @@ X(a, STATIC,   REQUIRED, STRING,   secret,            1) \
 X(a, STATIC,   REQUIRED, UINT32,   user_id,           2) \
 X(a, STATIC,   REQUIRED, UINT32,   strength,          3) \
 X(a, STATIC,   REQUIRED, UINT32,   magic,             4) \
-X(a, STATIC,   REQUIRED, UINT32,   dexterity,         5)
+X(a, STATIC,   REQUIRED, UINT32,   dexterity,         5) \
+X(a, STATIC,   REQUIRED, UINT32,   bonus_points,      6) \
+X(a, STATIC,   REPEATED, UENUM,    skills,           10)
 #define portal_PlayerData_CALLBACK NULL
 #define portal_PlayerData_DEFAULT NULL
 
@@ -50,7 +71,7 @@ extern const pb_msgdesc_t portal_PlayerData_msg;
 #define portal_PlayerData_fields &portal_PlayerData_msg
 
 /* Maximum encoded size of messages (where known) */
-#define portal_PlayerData_size                   33
+#define portal_PlayerData_size                   59
 
 #ifdef __cplusplus
 } /* extern "C" */

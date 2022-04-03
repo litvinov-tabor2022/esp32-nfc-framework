@@ -8,4 +8,14 @@ message PlayerData {
   required uint32 strength = 3;
   required uint32 magic = 4;
   required uint32 dexterity = 5;
+  required uint32 bonus_points = 6;
+  repeated Skill skills = 10;
+}
+
+enum Skill {
+  Skill_Default = 0;
+  Skill_Climbing = 1;
+  Skill_LockPicking = 2;
+
+  Magic_Fire = 101;
 }

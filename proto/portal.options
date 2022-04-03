@@ -1,1 +1,2 @@
 portal.PlayerData.secret max_size:8
+portal.PlayerData.skills max_count:10
