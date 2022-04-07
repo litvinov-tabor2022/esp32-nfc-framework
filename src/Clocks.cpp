@@ -10,10 +10,6 @@ bool Clocks::begin() {
     {
         std::lock_guard<std::mutex> lg(HwLocks::I2C);
         if (!rtc.begin()) return false;
-
-        if (rtc.lostPower()) {
-            Debug.println("RTC lost power, please update the time!");
-        }
     }
 
     printCurrentTime();

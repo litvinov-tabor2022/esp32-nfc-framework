@@ -14,8 +14,8 @@ public:
 private:
     void printCurrentTime();
 
-    RTC_DS3231 rtc;
+    RTC_DS1307 rtc;
 };
 
 
-#endif //PORTAL_CLOCKS_H
+#endif //ESP32_PORTAL_CLOCKS_H
