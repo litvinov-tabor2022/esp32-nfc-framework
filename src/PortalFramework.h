@@ -29,11 +29,11 @@ public:
 
     void addOnConnectCallback(const std::function<void(PlayerData)> &callback) { tagConnectedCallbacks.push_back(callback); }
 
-    void addOnDisconnectCallback(const std::function<void(void)> &callback) { reader.addOnDisconnectCallback(callback); }
+    void addOnDisconnectCallback(const std::function<void(void)> &callback) { reader->addOnDisconnectCallback(callback); }
 
     void addErrorCallback(const std::function<void(const String *)> &callback) { errorCallbacks.push_back(callback); }
 
-    bool isTagConnected() const { return reader.isTagConnected(); }
+    bool isTagConnected() const { return reader->isTagConnected(); }
 
     bool initializeTag();
 
@@ -54,7 +54,7 @@ private:
         for (auto &callback: errorCallbacks) callback(text);
     }
 
-    MFRCTagReader reader = MFRCTagReader(&Debug, NFC_PIN_SS, NFC_PIN_RST);
+    MFRCTagReader *reader;
 
     std::vector<std::function<void(PlayerData playerData)>> tagConnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;

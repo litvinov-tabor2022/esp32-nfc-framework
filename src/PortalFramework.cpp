@@ -11,7 +11,10 @@ byte rawTagData[BUFFER_SIZE];
 bool PortalFramework::begin() {
     {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
-        if (!reader.begin()) {
+        
+        reader = new MFRCTagReader(&Debug, NFC_PIN_SS, NFC_PIN_RST);
+        
+        if (!reader->begin()) {
             Debug.println("Could not initialize tag reader!");
             return false;
         }
@@ -27,10 +30,10 @@ bool PortalFramework::begin() {
         return false;
     }
 
-    reader.addOnConnectCallback([this](const byte *uid) {
+    reader->addOnConnectCallback([this](const byte *uid) {
         const String uidStr = hexStr(uid, MFRC_UID_LENGTH);
 
-        if (reader.isTagConnected()) {
+        if (reader->isTagConnected()) {
             Core0.once("handleConnTag", [this, uidStr]() {
                 handleConnectedTag(uidStr);
             });
@@ -39,7 +42,7 @@ bool PortalFramework::begin() {
 
     Core1.loopEvery("rfid", 50, [this] {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
-        reader.checkTagPresented();
+        reader->checkTagPresented();
     });
 
     return true;
@@ -51,7 +54,7 @@ void PortalFramework::handleConnectedTag(const String &uid) {
 
     PlayerData playerData = portal_PlayerData_init_zero;
     if (readPlayerData(&playerData)) {
-        if (reader.isTagConnected()) {
+        if (reader->isTagConnected()) {
             for (auto &callback: tagConnectedCallbacks) callback(playerData);
         } else {
             Debug.println("Tag disconnected during reading, quit");
@@ -136,11 +139,11 @@ bool PortalFramework::readPlayerData(_portal_PlayerData *playerData) {
 
 bool PortalFramework::nfcWrite(byte *data, int size) {
     std::lock_guard<std::mutex> lg(HwLocks::SPI);
-    return reader.write(data, size);
+    return reader->write(data, size);
 }
 
 bool PortalFramework::nfcRead(byte *byte, int size) {
     std::lock_guard<std::mutex> lg(HwLocks::SPI);
-    return reader.read(byte, size);
+    return reader->read(byte, size);
 }
 
