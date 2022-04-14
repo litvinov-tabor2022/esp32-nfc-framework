@@ -1,6 +1,8 @@
 #ifndef ESP32_PORTAL_PORTALFRAMEWORK_H
 #define ESP32_PORTAL_PORTALFRAMEWORK_H
 
+#include <optional>
+
 #include <types.h>
 #include <Tasker.h>
 #include <debugging.h>
@@ -15,6 +17,7 @@
 #include <MFRCTagReader.h>
 #include <Storage.h>
 #include <Clocks.h>
+#include <Resources.h>
 
 static const std::string TagSecret = "$1$gJvI";
 
@@ -25,7 +28,8 @@ typedef portal_PlayerData PlayerData;
 class PortalFramework {
 
 public:
-    bool begin();
+    // None if no error
+    std::optional<std::string> begin();
 
     void addOnConnectCallback(const std::function<void(PlayerData)> &callback) { tagConnectedCallbacks.push_back(callback); }
 
@@ -33,7 +37,7 @@ public:
 
     void addErrorCallback(const std::function<void(const String *)> &callback) { errorCallbacks.push_back(callback); }
 
-    bool isTagConnected() const { return reader->isTagConnected(); }
+    [[nodiscard]] bool isTagConnected() const { return reader->isTagConnected(); }
 
     bool initializeTag();
 
@@ -41,6 +45,7 @@ public:
 
     Storage storage;
     Clocks clocks;
+    Resources resources;
 private:
     bool readPlayerData(PlayerData *playerData);
 

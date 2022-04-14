@@ -8,26 +8,31 @@
 #define BUFFER_SIZE 32 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
-bool PortalFramework::begin() {
+std::optional<std::string> PortalFramework::begin() {
     {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
-        
+
         reader = new MFRCTagReader(&Debug, NFC_PIN_SS, NFC_PIN_RST);
-        
+
         if (!reader->begin()) {
             Debug.println("Could not initialize tag reader!");
-            return false;
+            return std::optional("Could not initialize tag reader!");
         }
     }
 
     if (!storage.begin()) {
         Debug.println("Could not initialize transactions log!");
-        return false;
+        return std::optional("Could not initialize transactions log!");
+    }
+
+    if (!resources.begin(&storage)) {
+        Debug.println("Could not load resources!");
+        return std::optional("Could not load resources!");
     }
 
     if (!clocks.begin()) {
         Debug.println("Could not initialize RTC!");
-        return false;
+        return std::optional("Could not initialize RTC!");
     }
 
     reader->addOnConnectCallback([this](const byte *uid) {
@@ -45,7 +50,7 @@ bool PortalFramework::begin() {
         reader->checkTagPresented();
     });
 
-    return true;
+    return std::nullopt;
 }
 
 void PortalFramework::handleConnectedTag(const String &uid) {
