@@ -2,37 +2,25 @@
 #include <debugging.h>
 #include <ArduinoJson.h>
 
+#include <utility>
+
 #define RESOURCES_DEBUG false
 
-bool Resources::begin(Storage *storage) {
-    Debug.println("Loading resources...");
-
-    if (!loadNames(storage)) {
-        Debug.println("Could not load names resource!");
-        return false;
-    }
-
-    if (!loadPriceList(storage)) {
-        Debug.println("Could not load skills resource!");
-        return false;
-    }
-
-    return true;
-}
-
-bool Resources::loadPriceList(Storage *storage) {
+PriceList *Resources::loadPriceList() {
     const auto doc = storage->loadJsonFile(PATH_PRICELIST);
     if (doc == nullptr) {
-        Debug.println("Could not load names resource");
-        return false;
+        Debug.println("Could not load prices resource");
+        return nullptr;
     }
 
     const auto array = doc->as<JsonArray>();
 
+    std::map<String, PriceListEntry> priceList;
+
     for (const auto row: array) {
         const PriceListEntry entry = PriceListEntry{
                 .code =  row["code"],
-                .name =  row["name"],
+                .opName =  row["opName"],
                 .constraints = PriceListEntryConstraints{
                         .strength =  row["strength"],
                         .magic = row["magic"],
@@ -42,25 +30,64 @@ bool Resources::loadPriceList(Storage *storage) {
         };
 
         if (RESOURCES_DEBUG) {
-            Debug.printf("Loaded priceList entry: code=%s name=%s skill=%d (strength=%d magic=%d dexterity=%d)\n",
-                         entry.code.c_str(), entry.name.c_str(), entry.skill, entry.constraints.strength, entry.constraints.magic,
+            Debug.printf("Loaded priceList entry: code=%s opName=%s skill=%d (strength=%d magic=%d dexterity=%d)\n",
+                         entry.code.c_str(), entry.opName.c_str(), entry.skill, entry.constraints.strength, entry.constraints.magic,
                          entry.constraints.dexterity);
         }
 
-        this->priceList.insert(std::make_pair(entry.code, entry));
+        priceList.insert(std::make_pair(entry.code, entry));
     }
 
-    return true;
+    return new PriceList(priceList);
 }
 
-bool Resources::loadNames(Storage *storage) {
-    const auto doc = storage->loadJsonFile(PATH_NAMES);
+SkillsList *Resources::loadSkillsList() {
+    const auto doc = storage->loadJsonFile(PATH_PRICELIST);
     if (doc == nullptr) {
-        Debug.println("Could not load names resource");
-        return false;
+        Debug.println("Could not load skills resource");
+        return nullptr;
     }
 
     const auto array = doc->as<JsonArray>();
+
+    std::vector<SkillsListEntry> skillsList;
+
+    for (const auto row: array) {
+        if (row["skill"].as<i16>() <= 0) continue; // skip "remove" pricelist entries
+
+        const SkillsListEntry entry = SkillsListEntry{
+                .name =  row["name"],
+                .description =  row["description"],
+                .constraints = PriceListEntryConstraints{
+                        .strength =  row["strength"],
+                        .magic = row["magic"],
+                        .dexterity = row["dexterity"],
+                },
+                .skill =  row["skill"],
+        };
+
+        if (RESOURCES_DEBUG) {
+            Debug.printf("Loaded skillsList entry: name=%s skill=%d (strength=%d magic=%d dexterity=%d)\n",
+                         entry.name.c_str(), entry.skill, entry.constraints.strength, entry.constraints.magic,
+                         entry.constraints.dexterity);
+        }
+
+        skillsList.push_back(entry);
+    }
+
+    return new SkillsList(skillsList);
+}
+
+PlayersMetadata *Resources::loadPlayersMeta() {
+    const auto doc = storage->loadJsonFile(PATH_NAMES);
+    if (doc == nullptr) {
+        Debug.println("Could not load names resource");
+        return nullptr;
+    }
+
+    const auto array = doc->as<JsonArray>();
+
+    std::map<u8, PlayerMetadata> players;
 
     for (const auto row: array) {
         const u8 id = row["id"];
@@ -71,47 +98,40 @@ bool Resources::loadNames(Storage *storage) {
         players.insert(std::make_pair(id, PlayerMetadata{.name = name, .group = group}));
     }
 
-    return true;
+    return new PlayersMetadata(players);
 }
 
-PlayerMetadata Resources::getPlayerMetadata(const u8 userId) {
-    return players[userId];
-}
-
-std::vector<PriceListEntry> Resources::getPriceListPage(const u8 pageNo, const u8 pageSize) {
-    u8 start = pageNo * pageSize;
-    u8 end = start + pageSize - 1;
-
-//    Serial.printf("BEF pageNo %d start %d end %d \n", pageNo, start, end);
-
-    if (end > priceList.size()) {
-        end = priceList.size() - 1;
-        start = max(end - pageSize, 0);
-    }
-
-//    Serial.printf("AFT pageNo %d start %d end %d \n", pageNo, start, end);
-
-    //TODO rewrite this shit 😱
-    auto it = priceList.cbegin();
-
-    std::vector<PriceListEntry> subset = std::vector<PriceListEntry>();
-
-    for (int i = 0; i < start; i++) {
-        it++;
-    }
-
-    for (int i = 0; i < pageSize; i++, it++) {
-        subset.push_back(it->second);
-    }
-
-    return subset;
-}
-
-std::optional<PriceListEntry> Resources::getPriceListEntry(const String &code) {
+std::optional<PriceListEntry> PriceList::getItemForCode(const String &code) {
     auto it = this->priceList.find(code);
     if (it == priceList.end()) return std::nullopt;
 
     return it->second;
 }
 
+PlayerMetadata PlayersMetadata::getPlayerMetadata(const u8 userId) {
+    return players[userId];
+}
 
+SkillsIterator SkillsList::getSkillsPageStart(u8 pageNo, u8 pageSize) {
+    u8 start = pageNo * pageSize;
+    u8 end = start + pageSize - 1;
+
+    if (end > skillsList.size()) {
+        end = skillsList.size() - 1;
+        start = max(end - pageSize, 0);
+    }
+
+    return skillsList.cbegin() + start;
+}
+
+SkillsList::SkillsList(std::vector<SkillsListEntry> skillsList) : skillsList(std::move(skillsList)) {}
+
+PlayersMetadata::PlayersMetadata(std::map<u8, PlayerMetadata> players) : players(std::move(players)) {}
+
+PriceList::PriceList(std::map<String, PriceListEntry> priceList) : priceList(std::move(priceList)) {}
+
+Resources::Resources(Storage *storage) : storage(storage) {}
+
+bool Resources::begin() {
+    return storage->exists(PATH_NAMES) && storage->exists(PATH_PRICELIST);
+}

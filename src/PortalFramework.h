@@ -45,7 +45,7 @@ public:
 
     Storage storage;
     Clocks clocks;
-    Resources resources;
+    Resources resources = Resources(&storage);
 private:
     bool readPlayerData(PlayerData *playerData);
 

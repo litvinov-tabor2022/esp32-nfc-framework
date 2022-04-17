@@ -24,12 +24,10 @@ public:
 
     DynamicJsonDocument *loadJsonFile(const char *path);
 
-private:
-    bool ensureCommitLogFileExists();
-
     bool exists(const char *path);
 
-    void listDir(const char *dirname, uint8_t levels);
+private:
+    bool ensureCommitLogFileExists();
 
     void readFile(const char *path);
 

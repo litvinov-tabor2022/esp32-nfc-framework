@@ -10,7 +10,7 @@
 #define PATH_NAMES "/resources/names.json"
 #define PATH_PRICELIST "/resources/prices.json"
 
-struct PriceListEntryConstraints{
+struct PriceListEntryConstraints {
     u8 strength;
     u8 magic;
     u8 dexterity;
@@ -18,10 +18,16 @@ struct PriceListEntryConstraints{
 
 struct PriceListEntry {
     String code;
+    String opName;
+    PriceListEntryConstraints constraints;
+    i16 skill;
+};
+
+struct SkillsListEntry {
     std::string name;
     std::string description;
     PriceListEntryConstraints constraints;
-    i16 skill;
+    u16 skill;
 };
 
 struct PlayerMetadata {
@@ -29,22 +35,60 @@ struct PlayerMetadata {
     u8 group;
 };
 
+class PriceList;
+
+class SkillsList;
+
+class PlayersMetadata;
+
 class Resources {
 public:
-    bool begin(Storage *storage);
+    explicit Resources(Storage *storage);
 
-    PlayerMetadata getPlayerMetadata(u8 userId);
-    std::vector<PriceListEntry> getPriceListPage(u8 pageNo, u8 pageSize);
-    std::optional<PriceListEntry> getPriceListEntry(const String& code);
+    bool begin();
+
+    PlayersMetadata *loadPlayersMeta();
+
+    PriceList *loadPriceList();
+
+    SkillsList *loadSkillsList();
 
 private:
-    bool loadNames(Storage *storage);
+    Storage *storage;
+};
 
-    bool loadPriceList(Storage *storage);
+class PlayersMetadata {
+public:
+    explicit PlayersMetadata(std::map<u8, PlayerMetadata> players);
 
+    PlayerMetadata getPlayerMetadata(u8 userId);
+
+private:
     std::map<u8, PlayerMetadata> players;
+};
+
+class PriceList {
+public:
+    explicit PriceList(std::map<String, PriceListEntry> priceList);
+
+    std::optional<PriceListEntry> getItemForCode(const String &code);
+
+private:
     std::map<String, PriceListEntry> priceList;
 };
 
+typedef std::vector<SkillsListEntry>::const_iterator SkillsIterator;
+
+class SkillsList {
+public:
+    explicit SkillsList(std::vector<SkillsListEntry> skillsList);
+
+    SkillsIterator getSkillsPageStart(u8 pageNo, u8 pageSize);
+
+    [[nodiscard]] u8 getLength() const { return skillsList.size(); }
+
+private:
+    std::vector<SkillsListEntry> skillsList;
+};
 
 #endif //KIOSK_RESOURCES_H

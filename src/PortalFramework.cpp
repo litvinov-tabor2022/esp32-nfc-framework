@@ -25,7 +25,7 @@ std::optional<std::string> PortalFramework::begin() {
         return std::optional("Could not initialize transactions log!");
     }
 
-    if (!resources.begin(&storage)) {
+    if (!resources.begin()) {
         Debug.println("Could not load resources!");
         return std::optional("Could not load resources!");
     }

@@ -55,37 +55,6 @@ bool Storage::begin() {
     return true;
 }
 
-void Storage::listDir(const char *dirname, uint8_t levels) {
-    Debug.printf("Listing directory: %s\n", dirname);
-
-    File root = SPIFFS.open(dirname);
-    if (!root) {
-        Debug.println("Failed to open directory");
-        return;
-    }
-    if (!root.isDirectory()) {
-        Debug.println("Not a directory");
-        return;
-    }
-
-    File file = root.openNextFile();
-    while (file) {
-        if (file.isDirectory()) {
-            Debug.print(" DIR : ");
-            Debug.println(file.name());
-            if (levels) {
-                listDir(file.name(), levels - 1);
-            }
-        } else {
-            Debug.print(" FILE: ");
-            Debug.print(file.name());
-            Debug.print(" SIZE: ");
-            Debug.println(file.size());
-        }
-        file = root.openNextFile();
-    }
-}
-
 void Storage::readFile(const char *path) {
     Debug.printf("Reading file: %s\n", path);
 
