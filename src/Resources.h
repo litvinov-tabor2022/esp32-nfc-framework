@@ -18,9 +18,10 @@ struct PriceListEntryConstraints {
 
 struct PriceListEntry {
     String code;
-    String opName;
+    String altName;
+    Operation operation;
     PriceListEntryConstraints constraints;
-    i16 skill;
+    u16 skill;
 };
 
 struct SkillsListEntry {

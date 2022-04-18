@@ -18,9 +18,9 @@ PriceList *Resources::loadPriceList() {
     std::map<String, PriceListEntry> priceList;
 
     for (const auto row: array) {
-        const PriceListEntry entry = PriceListEntry{
+        PriceListEntry entry = PriceListEntry{
                 .code =  row["code"],
-                .opName =  row["opName"],
+                .altName =  row["altName"],
                 .constraints = PriceListEntryConstraints{
                         .strength =  row["strength"],
                         .magic = row["magic"],
@@ -30,12 +30,19 @@ PriceList *Resources::loadPriceList() {
         };
 
         if (RESOURCES_DEBUG) {
-            Debug.printf("Loaded priceList entry: code=%s opName=%s skill=%d (strength=%d magic=%d dexterity=%d)\n",
-                         entry.code.c_str(), entry.opName.c_str(), entry.skill, entry.constraints.strength, entry.constraints.magic,
+            Debug.printf("Loaded priceList entry: code=%s altName=%s skill=%d (strength=%d magic=%d dexterity=%d)\n",
+                         entry.code.c_str(), entry.altName.c_str(), entry.skill, entry.constraints.strength,
+                         entry.constraints.magic,
                          entry.constraints.dexterity);
         }
+        String code = entry.code;
+        entry.code = "A" + code;
+        entry.operation = ADD;
+        priceList.insert(std::make_pair(entry.code, entry)); // code for adding
 
-        priceList.insert(std::make_pair(entry.code, entry));
+        entry.code = "D" + code;
+        entry.operation = REMOVE;
+        priceList.insert(std::make_pair(entry.code, entry)); // code for removing
     }
 
     return new PriceList(priceList);
