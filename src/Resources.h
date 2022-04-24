@@ -7,9 +7,6 @@
 #include <vector>
 #include <optional>
 
-#define PATH_NAMES "/resources/names.json"
-#define PATH_PRICELIST "/resources/prices.json"
-
 struct PriceListEntryConstraints {
     u8 strength;
     u8 magic;

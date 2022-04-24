@@ -5,6 +5,8 @@
 #include <pb_decode.h>
 #include <pb_encode.h>
 
+#include <utility>
+
 #define BUFFER_SIZE 32 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
@@ -30,6 +32,16 @@ std::optional<std::string> PortalFramework::begin() {
         return std::optional("Could not load resources!");
     }
 
+    if (!loadDeviceConfig()) {
+        Debug.println("Could not load device config!");
+        return std::optional("Could not load device config!");
+    }
+
+    if (!loadFrameworkConfig()) {
+        Debug.println("Could not load framework config!");
+        return std::optional("Could not load framework config!");
+    }
+
     if (!clocks.begin()) {
         Debug.println("Could not initialize RTC!");
         return std::optional("Could not initialize RTC!");
@@ -49,6 +61,11 @@ std::optional<std::string> PortalFramework::begin() {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
         reader->checkTagPresented();
     });
+
+    if (!AccessPoint::start(deviceConfig.apSSID.c_str(), deviceConfig.apPass.c_str())) {
+        Debug.println("Could not start AP!");
+        return std::optional("Could not start AP!");
+    }
 
     return std::nullopt;
 }
@@ -152,3 +169,37 @@ bool PortalFramework::nfcRead(byte *byte, int size) {
     return reader->read(byte, size);
 }
 
+bool PortalFramework::loadFrameworkConfig() {
+    const auto doc = storage.loadJsonFile(PATH_CONFIG_FRAMEWORK);
+    if (doc == nullptr) {
+        Debug.println("Could not load framework config resource");
+        return false;
+    }
+
+    const auto c = doc->as<JsonObject>();
+
+    frameworkConfig = FrameworkConfig{
+            .syncSSID = c["syncSSID"],
+            .syncPass = c["syncPass"],
+    };
+
+    return !(frameworkConfig.syncPass.isEmpty() || frameworkConfig.syncSSID.isEmpty());
+}
+
+bool PortalFramework::loadDeviceConfig() {
+    const auto doc = storage.loadJsonFile(PATH_CONFIG_DEVICE);
+    if (doc == nullptr) {
+        Debug.println("Could not load device config resource");
+        return false;
+    }
+
+    const auto c = doc->as<JsonObject>();
+
+    deviceConfig = DeviceConfig{
+            .deviceId = c["deviceId"],
+            .apSSID = c["apSSID"],
+            .apPass = c["apPass"],
+    };
+
+    return !(deviceConfig.apPass.isEmpty() || deviceConfig.apSSID.isEmpty() || deviceConfig.deviceId.isEmpty());
+}

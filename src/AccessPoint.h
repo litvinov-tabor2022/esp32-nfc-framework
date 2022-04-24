@@ -7,8 +7,8 @@
 
 class AccessPoint {
 public:
-    static void start(const char *ssid, const char *password);
-    static void stop();
+    static bool start(const char *ssid, const char *password);
+    static bool stop();
 };
 
 #endif //ESP32NFC_ACCESSPOINT

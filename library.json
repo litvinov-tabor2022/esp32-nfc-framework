@@ -22,7 +22,8 @@
     "jendakol/ESPx NFC tag reader library": "^0.1.1",
     "nanopb/Nanopb": "@0.4.5",
     "adafruit/RTClib": "^2.0.1",
-    "bblanchon/ArduinoJson": "^6.18.5"
+    "bblanchon/ArduinoJson": "^6.18.5",
+    "me-no-dev/ESP Async WebServer": "^1.2.3"
   },
   "frameworks": [
     "arduino"

@@ -3,6 +3,11 @@
 
 #include <types.h>
 
+#define PATH_CONFIG_FRAMEWORK "/configs/framework.json"
+#define PATH_CONFIG_DEVICE "/configs/device.json"
+#define PATH_NAMES "/resources/names.json"
+#define PATH_PRICELIST "/resources/prices.json"
+
 enum Operation {
     ADD,
     REMOVE,

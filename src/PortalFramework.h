@@ -18,12 +18,25 @@
 #include <Storage.h>
 #include <Clocks.h>
 #include <Resources.h>
+#include "WebServer.h"
+#include "SynchronizationMode.h"
 
 static const std::string TagSecret = "$1$gJvI";
 
 #define ADMIN_USER_ID 999
 
 typedef portal_PlayerData PlayerData;
+
+struct DeviceConfig {
+    String deviceId;
+    String apSSID;
+    String apPass;
+};
+
+struct FrameworkConfig {
+    String syncSSID;
+    String syncPass;
+};
 
 class PortalFramework {
 
@@ -43,9 +56,13 @@ public:
 
     bool writePlayerData(PlayerData &playerData);
 
+    DeviceConfig &getDeviceConfig() { return deviceConfig; }
+
     Storage storage;
     Clocks clocks;
     Resources resources = Resources(&storage);
+    SynchronizationMode synchronizationMode = SynchronizationMode(&webServer, &frameworkConfig, &deviceConfig);
+
 private:
     bool readPlayerData(PlayerData *playerData);
 
@@ -55,15 +72,22 @@ private:
 
     void handleConnectedTag(const String &uid);
 
+    bool loadFrameworkConfig();
+
+    bool loadDeviceConfig();
+
     void onErrorMessage(const String *text) {
         for (auto &callback: errorCallbacks) callback(text);
     }
 
     MFRCTagReader *reader;
+    WebServer webServer = WebServer(this);
+
+    DeviceConfig deviceConfig;
+    FrameworkConfig frameworkConfig;
 
     std::vector<std::function<void(PlayerData playerData)>> tagConnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;
 };
-
 
 #endif //ESP32_PORTAL_PORTALFRAMEWORK_H
