@@ -11,12 +11,24 @@ bool Storage::appendTransaction(const Transaction &transaction) {
     StaticJsonDocument<256> doc;
 
     doc["time"] = transaction.time;
+    doc["device_id"] = transaction.device_id;
     doc["user_id"] = transaction.user_id;
-    doc["strength"] = transaction.strength;
-    doc["magic"] = transaction.magic;
-    doc["dexterity"] = transaction.dexterity;
-    doc["bonus_points"] = transaction.bonus_points;
-    doc["skill"] = transaction.skill;
+
+    if (transaction.strength != 0) {
+        doc["strength"] = transaction.strength;
+    }
+    if (transaction.dexterity != 0) {
+        doc["dexterity"] = transaction.dexterity;
+    }
+    if (transaction.magic != 0) {
+        doc["magic"] = transaction.magic;
+    }
+    if (transaction.bonus_points != 0) {
+        doc["bonus_points"] = transaction.bonus_points;
+    }
+    if (transaction.skill != 0) {
+        doc["skill"] = transaction.skill;
+    }
 
     File file = SPIFFS.open(COMMITLOG_FILE, FILE_APPEND);
 

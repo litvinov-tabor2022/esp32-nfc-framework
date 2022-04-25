@@ -8,21 +8,15 @@
 #define PATH_NAMES "/resources/names.json"
 #define PATH_PRICELIST "/resources/prices.json"
 
-enum Operation {
-    ADD,
-    REMOVE,
-    UNKNOWN
-};
-
 struct Transaction {
     u64 time;
-    u8 user_id;
-    u8 strength;
-    u8 magic = 0;
-    u8 dexterity = 0;
-    u16 skill = 0;
-    u8 bonus_points = 0;
-    Operation operation = UNKNOWN;
+    String device_id;
+    u16 user_id;
+    i8 strength = 0;
+    i8 magic = 0;
+    i8 dexterity = 0;
+    i16 skill = 0;
+    i8 bonus_points = 0;
 };
 
 #endif //ESP32_PORTAL_DEFS_H

@@ -13,6 +13,11 @@ struct PriceListEntryConstraints {
     u8 dexterity;
 };
 
+enum Operation {
+    ADD,
+    REMOVE,
+};
+
 struct PriceListEntry {
     String code;
     String altName;
