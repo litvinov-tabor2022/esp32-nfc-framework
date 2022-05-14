@@ -8,7 +8,7 @@ WebServer::WebServer(PortalFramework *framework) {
 
     webServer->on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
         Debug.println("Handling GET /status");
-        auto resp = request->beginResponse(200, CONTENT_TYPE_JSON, R"({"status":"ok"})");
+        auto resp = request->beginResponse(200, CONTENT_TYPE_JSON, statusString.c_str());
         resp->addHeader(DEVICE_ID_HEADER, this->framework->getDeviceConfig().deviceId);
         request->send(resp);
     });
@@ -33,8 +33,8 @@ WebServer::WebServer(PortalFramework *framework) {
         request->send(200, CONTENT_TYPE_JSON, R"({"status":"updated"})");
     });
 
-    webServer->onNotFound([](auto req){
-       req->send(404);
+    webServer->onNotFound([](auto req) {
+        req->send(404);
     });
 }
 
@@ -61,6 +61,9 @@ void WebServer::serveCommitLogFile(AsyncWebServerRequest *request) {
 }
 
 void WebServer::start() {
+    // this can't be in ctor... the config is not initialized yet
+    this->statusString = String(R"({"status":"ok", "device_id": ")" + framework->getDeviceConfig().deviceId + "\"}");
+
     webServer->begin();
 }
 

@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <types.h>
+#include "debugging.h"
 #include "WifiClient.h"
 #include "Tasker.h"
 
@@ -16,6 +17,8 @@ bool WifiClient::connect(const char *ssid, const char *password, const u32 timeo
     while (WiFiClass::status() != WL_CONNECTED && ((now = millis()) - start) < timeoutMs) {
         Tasker::sleep(100);
     }
+
+    Debug.printf("Connected to wifi %s with IP %s!\n", ssid, WiFi.localIP().toString().c_str());
 
     return WiFiClass::status() == WL_CONNECTED;
 }
