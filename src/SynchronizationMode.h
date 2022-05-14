@@ -12,8 +12,12 @@ public:
     explicit SynchronizationMode(WebServer *webServer, FrameworkConfig *frameworkConfig, DeviceConfig *deviceConfig);
 
     bool start();
+
     bool stop();
+
     bool toggle();
+
+    [[nodiscard]] bool isStarted() const { return started; }
 
 private:
     std::mutex switchMutex;
