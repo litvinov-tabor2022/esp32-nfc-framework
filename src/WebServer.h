@@ -18,6 +18,8 @@ public:
     void stop();
 
 private:
+    String statusString;
+
     AsyncWebServer *webServer;
     PortalFramework *framework;
 
