@@ -44,7 +44,7 @@ public:
     // None if no error
     std::optional<std::string> begin();
 
-    void addOnConnectCallback(const std::function<void(PlayerData)> &callback) { tagConnectedCallbacks.push_back(callback); }
+    void addOnConnectCallback(const std::function<void(PlayerData, bool)> &callback) { tagConnectedCallbacks.push_back(callback); }
 
     void addOnDisconnectCallback(const std::function<void(void)> &callback) { reader->addOnDisconnectCallback(callback); }
 
@@ -86,7 +86,7 @@ private:
     DeviceConfig deviceConfig;
     FrameworkConfig frameworkConfig;
 
-    std::vector<std::function<void(PlayerData playerData)>> tagConnectedCallbacks;
+    std::vector<std::function<void(PlayerData playerData, bool isReload)>> tagConnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;
 };
 

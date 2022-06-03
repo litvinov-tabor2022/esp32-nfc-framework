@@ -77,7 +77,7 @@ void PortalFramework::handleConnectedTag(const String &uid) {
     PlayerData playerData = portal_PlayerData_init_zero;
     if (readPlayerData(&playerData)) {
         if (reader->isTagConnected()) {
-            for (auto &callback: tagConnectedCallbacks) callback(playerData);
+            for (auto &callback: tagConnectedCallbacks) callback(playerData, false);
         } else {
             Debug.println("Tag disconnected during reading, quit");
             return;
@@ -132,7 +132,7 @@ bool PortalFramework::writePlayerData(_portal_PlayerData &playerData) {
     }
 
     // update data everywhere!
-    for (auto &callback: tagConnectedCallbacks) callback(playerData);
+    for (auto &callback: tagConnectedCallbacks) callback(playerData, true);
 
     return true;
 }
