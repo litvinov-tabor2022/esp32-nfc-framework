@@ -1,6 +1,8 @@
 #include "WebServer.h"
 
 #include "PortalFramework.h"
+#include "otaWebPage.h"
+#include "Update.h"
 
 WebServer::WebServer(PortalFramework *framework) {
     webServer = new AsyncWebServer(80);
@@ -31,6 +33,51 @@ WebServer::WebServer(PortalFramework *framework) {
         Debug.println("Handling PUT /time");
         this->framework->clocks.setCurrentTime(request->arg("secs").toInt());
         request->send(200, CONTENT_TYPE_JSON, R"({"status":"updated"})");
+    });
+
+    webServer->on("/update", HTTP_GET, [&](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", upload_html_gz, upload_html_gz_len);
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    webServer->on("/update", HTTP_POST, [&](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse((Update.hasError()) ? 500 : 200, "text/plain",
+                                                                  (Update.hasError()) ? "FAIL" : "OK");
+        response->addHeader("Connection", "close");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        request->send(response);
+        ESP.restart();
+    }, [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+        int cmd = U_FLASH;
+        if(request->hasHeader("X-TYPE")){
+            auto fileType = request->getHeader("X-TYPE");
+            cmd = (fileType->value() == "filesystem") ? U_SPIFFS : U_FLASH;
+        }
+
+        if (!index) {
+            if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) { // Start with max available size
+                Update.printError(Serial);
+                return request->send(400, "text/plain", "OTA could not begin");
+            }
+        }
+
+        // Write chunked data to the free sketch space
+        if (len) {
+            if (Update.write(data, len) != len) {
+                return request->send(400, "text/plain", "OTA could not begin");
+            }
+        }
+
+        if (final) { // if the final flag is set then this is the last frame of data
+            if (!Update.end(true)) { //true to set the size to the current progress
+                Update.printError(Serial);
+                return request->send(400, "text/plain", "Could not end OTA");
+            }
+        } else {
+            return;
+        }
     });
 
     webServer->onNotFound([](auto req) {
