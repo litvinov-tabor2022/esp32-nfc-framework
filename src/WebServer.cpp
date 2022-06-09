@@ -3,6 +3,7 @@
 #include "PortalFramework.h"
 #include "otaWebPage.h"
 #include "Update.h"
+#include "OtaUpdater.h"
 
 WebServer::WebServer(PortalFramework *framework) {
     webServer = new AsyncWebServer(80);
@@ -41,79 +42,48 @@ WebServer::WebServer(PortalFramework *framework) {
         request->send(response);
     });
 
-    webServer->on("/update", HTTP_POST, [&](AsyncWebServerRequest *request) {
-        AsyncWebServerResponse *response = request->beginResponse((Update.hasError()) ? 500 : 200, "text/plain",
-                                                                  (Update.hasError()) ? "FAIL" : "OK");
-        response->addHeader("Connection", "close");
-        response->addHeader("Access-Control-Allow-Origin", "*");
-        request->send(response);
-        ESP.restart();
-    }, [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+    webServer->on("/upload/flash", HTTP_POST,
+                  [](AsyncWebServerRequest *request) {},
+                  [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data,
+                     size_t len, bool final) { OtaUpdater::handleDoUpdate(request, filename, index, data, len, final, U_FLASH); }
+    );
 
-        int cmd = U_FLASH;
-        if(request->hasHeader("X-TYPE")){
-            auto fileType = request->getHeader("X-TYPE");
-            cmd = (fileType->value() == "filesystem") ? U_SPIFFS : U_FLASH;
-        }
-
-        if (!index) {
-            if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) { // Start with max available size
-                Update.printError(Serial);
-                return request->send(400, "text/plain", "OTA could not begin");
-            }
-        }
-
-        // Write chunked data to the free sketch space
-        if (len) {
-            if (Update.write(data, len) != len) {
-                return request->send(400, "text/plain", "OTA could not begin");
-            }
-        }
-
-        if (final) { // if the final flag is set then this is the last frame of data
-            if (!Update.end(true)) { //true to set the size to the current progress
-                Update.printError(Serial);
-                return request->send(400, "text/plain", "Could not end OTA");
-            }
-        } else {
-            return;
-        }
-    });
-
-    webServer->onNotFound([](auto req) {
-        req->send(404);
-    });
+    webServer->on("/upload/spiffs", HTTP_POST,
+                  [](AsyncWebServerRequest *request) {},
+                  [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data,
+                     size_t len, bool final) { OtaUpdater::handleDoUpdate(request, filename, index, data, len, final, U_SPIFFS); }
+    );
 }
+    void WebServer::serveCommitLogFile(AsyncWebServerRequest *request) {
+        this->framework->storage.withCommitLogFile([request](File file) mutable {
+            Debug.printf("Serving commit log file, size %d bytes\n", file.size());
 
-void WebServer::serveCommitLogFile(AsyncWebServerRequest *request) {
-    this->framework->storage.withCommitLogFile([request](File file) mutable {
-        Debug.printf("Serving commit log file, size %d bytes\n", file.size());
+            AsyncWebServerResponse *response = request->beginResponse(
+                    CONTENT_TYPE_JSONL,
+                    file.size(),
+                    [file](uint8_t *buffer, size_t maxLen, size_t total) mutable -> size_t {
+                        const int bytes = file.read(buffer, maxLen);
 
-        AsyncWebServerResponse *response = request->beginResponse(
-                CONTENT_TYPE_JSONL,
-                file.size(),
-                [file](uint8_t *buffer, size_t maxLen, size_t total) mutable -> size_t {
-                    const int bytes = file.read(buffer, maxLen);
+                        // close file at the end
+                        if (bytes + total == file.size()) file.close();
 
-                    // close file at the end
-                    if (bytes + total == file.size()) file.close();
+                        return max(0, bytes); // return 0 even when no bytes were loaded
+                    }
+            );
 
-                    return max(0, bytes); // return 0 even when no bytes were loaded
-                }
-        );
+            response->addHeader(F("Access-Control-Allow-Origin"), F("*"));
+            request->send(response);
+        });
+    }
 
-        response->addHeader(F("Access-Control-Allow-Origin"), F("*"));
-        request->send(response);
-    });
-}
+    void WebServer::start() {
+        // this can't be in ctor... the config is not initialized yet
+        this->statusString = String(R"({"status":"ok", "device_group": "tabor2022", "device_id": ")" +
+                                    framework->getDeviceConfig().deviceId + "\"}");
 
-void WebServer::start() {
-    // this can't be in ctor... the config is not initialized yet
-    this->statusString = String(R"({"status":"ok", "device_group": "tabor2022", "device_id": ")" + framework->getDeviceConfig().deviceId + "\"}");
+        webServer->begin();
+    }
 
-    webServer->begin();
-}
-
-void WebServer::stop() {
-    webServer->end();
-}
+    void WebServer::stop() {
+        webServer->end();
+    }
