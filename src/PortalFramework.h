@@ -42,7 +42,7 @@ class PortalFramework {
 
 public:
     // None if no error
-    std::optional<std::string> begin();
+    std::optional<std::string> begin(bool ignoreRTCFailure = false);
 
     void addOnConnectCallback(const std::function<void(PlayerData, bool)> &callback) { tagConnectedCallbacks.push_back(callback); }
 
@@ -59,9 +59,11 @@ public:
     DeviceConfig &getDeviceConfig() { return deviceConfig; }
 
     Storage storage;
-    Clocks clocks;
     Resources resources = Resources(&storage);
     SynchronizationMode synchronizationMode = SynchronizationMode(&webServer, &frameworkConfig, &deviceConfig);
+
+    u64 getCurrentTime();
+    void setCurrentTime(u64 unixSecs);
 
 private:
     bool readPlayerData(PlayerData *playerData);
@@ -81,10 +83,13 @@ private:
     }
 
     MFRCTagReader *reader;
+    Clocks clocks;
     WebServer webServer = WebServer(this);
 
     DeviceConfig deviceConfig;
     FrameworkConfig frameworkConfig;
+
+    bool rtcFailed = false;
 
     std::vector<std::function<void(PlayerData playerData, bool isReload)>> tagConnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;

@@ -10,7 +10,7 @@
 #define BUFFER_SIZE 32 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
-std::optional<std::string> PortalFramework::begin() {
+std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
     {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
 
@@ -19,6 +19,16 @@ std::optional<std::string> PortalFramework::begin() {
         if (!reader->begin()) {
             Debug.println("Could not initialize tag reader!");
             return std::optional("Could not initialize tag reader!");
+        }
+    }
+
+    if (!clocks.begin()) {
+        if (ignoreRTCFailure) {
+            Debug.println("RTC init failed but it's set to be ignored");
+            rtcFailed = true;
+        } else {
+            Debug.println("Could not initialize RTC!");
+            return std::optional("Could not initialize RTC!");
         }
     }
 
@@ -40,11 +50,6 @@ std::optional<std::string> PortalFramework::begin() {
     if (!loadFrameworkConfig()) {
         Debug.println("Could not load framework config!");
         return std::optional("Could not load framework config!");
-    }
-
-    if (!clocks.begin()) {
-        Debug.println("Could not initialize RTC!");
-        return std::optional("Could not initialize RTC!");
     }
 
     reader->addOnConnectCallback([this](const byte *uid) {
@@ -202,4 +207,20 @@ bool PortalFramework::loadDeviceConfig() {
     };
 
     return !(deviceConfig.apPass.isEmpty() || deviceConfig.apSSID.isEmpty() || deviceConfig.deviceId.isEmpty());
+}
+
+u64 PortalFramework::getCurrentTime() {
+    if (rtcFailed) {
+        Debug.println("Could not RTC module as it's not initialized!!! Will reset the ESP...");
+        esp_restart();
+    }
+    return clocks.getCurrentTime();
+}
+
+void PortalFramework::setCurrentTime(const u64 unixSecs) {
+    if (rtcFailed) {
+        Debug.println("Could not RTC module as it's not initialized!!! Will reset the ESP...");
+        esp_restart();
+    }
+    clocks.setCurrentTime(unixSecs);
 }

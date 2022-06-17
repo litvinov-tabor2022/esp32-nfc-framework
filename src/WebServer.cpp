@@ -32,7 +32,7 @@ WebServer::WebServer(PortalFramework *framework) {
 
     webServer->on("/time", HTTP_PUT, [this](AsyncWebServerRequest *request) {
         Debug.println("Handling PUT /time");
-        this->framework->clocks.setCurrentTime(request->arg("secs").toInt());
+        this->framework->setCurrentTime(request->arg("secs").toInt());
         request->send(200, CONTENT_TYPE_JSON, R"({"status":"updated"})");
     });
 
