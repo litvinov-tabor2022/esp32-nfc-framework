@@ -19,7 +19,7 @@
   "dependencies": {
     "vshymanskyy/StreamDebugger": "^1.0.1",
     "jandrassy/TelnetStream": "^1.2.1",
-    "jendakol/ESPx NFC tag reader library": "^0.1.1",
+    "jendakol/ESPx NFC tag reader library": "^0.1.4",
     "nanopb/Nanopb": "@0.4.5",
     "adafruit/RTClib": "^2.0.1",
     "bblanchon/ArduinoJson": "^6.18.5",
