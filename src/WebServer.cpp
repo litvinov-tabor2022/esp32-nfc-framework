@@ -54,36 +54,37 @@ WebServer::WebServer(PortalFramework *framework) {
                      size_t len, bool final) { OtaUpdater::handleDoUpdate(request, filename, index, data, len, final, U_SPIFFS); }
     );
 }
-    void WebServer::serveCommitLogFile(AsyncWebServerRequest *request) {
-        this->framework->storage.withCommitLogFile([request](File file) mutable {
-            Debug.printf("Serving commit log file, size %d bytes\n", file.size());
 
-            AsyncWebServerResponse *response = request->beginResponse(
-                    CONTENT_TYPE_JSONL,
-                    file.size(),
-                    [file](uint8_t *buffer, size_t maxLen, size_t total) mutable -> size_t {
-                        const int bytes = file.read(buffer, maxLen);
+void WebServer::serveCommitLogFile(AsyncWebServerRequest *request) {
+    this->framework->storage.withCommitLogFile([request](File file) mutable {
+        Debug.printf("Serving commit log file, size %d bytes\n", file.size());
 
-                        // close file at the end
-                        if (bytes + total == file.size()) file.close();
+        AsyncWebServerResponse *response = request->beginResponse(
+                CONTENT_TYPE_JSONL,
+                file.size(),
+                [file](uint8_t *buffer, size_t maxLen, size_t total) mutable -> size_t {
+                    const int bytes = file.read(buffer, maxLen);
 
-                        return max(0, bytes); // return 0 even when no bytes were loaded
-                    }
-            );
+                    // close file at the end
+                    if (bytes + total == file.size()) file.close();
 
-            response->addHeader(F("Access-Control-Allow-Origin"), F("*"));
-            request->send(response);
-        });
-    }
+                    return max(0, bytes); // return 0 even when no bytes were loaded
+                }
+        );
 
-    void WebServer::start() {
-        // this can't be in ctor... the config is not initialized yet
-        this->statusString = String(R"({"status":"ok", "device_group": "tabor2022", "device_id": ")" +
-                                    framework->getDeviceConfig().deviceId + "\"}");
+        response->addHeader(F("Access-Control-Allow-Origin"), F("*"));
+        request->send(response);
+    });
+}
 
-        webServer->begin();
-    }
+void WebServer::start() {
+    // this can't be in ctor... the config is not initialized yet
+    this->statusString = String(R"({"status":"ok", "device_group": "tabor2022", "device_id": ")" +
+                                framework->getDeviceConfig().deviceId + "\"}");
 
-    void WebServer::stop() {
-        webServer->end();
-    }
+    webServer->begin();
+}
+
+void WebServer::stop() {
+    webServer->end();
+}
