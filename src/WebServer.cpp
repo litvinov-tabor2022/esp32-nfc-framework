@@ -5,6 +5,8 @@
 #include "Update.h"
 #include "OtaUpdater.h"
 
+void handleResourcesUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+
 WebServer::WebServer(PortalFramework *framework) {
     webServer = new AsyncWebServer(80);
     this->framework = framework;
@@ -41,6 +43,11 @@ WebServer::WebServer(PortalFramework *framework) {
         response->addHeader("Content-Encoding", "gzip");
         request->send(response);
     });
+
+    webServer->on("/upload/resources", HTTP_POST, [](AsyncWebServerRequest *request) {
+        Debug.println("Handling POST /upload/resources");
+        request->send(200);
+    }, handleResourcesUpload);
 
     webServer->on("/upload/flash", HTTP_POST,
                   [](AsyncWebServerRequest *request) {},
@@ -87,4 +94,23 @@ void WebServer::start() {
 
 void WebServer::stop() {
     webServer->end();
+}
+
+void handleResourcesUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+    if (!index) {
+        // open the file on first call and store the file handle in the request object
+        request->_tempFile = SPIFFS.open("/resources/" + filename, "w");
+        Serial.println("Resources Upload Start: " + String(filename));
+    }
+
+    if (len) {
+        // stream the incoming chunk to the opened file
+        request->_tempFile.write(data, len);
+    }
+
+    if (final) {
+        // close the file handle as the upload is now done
+        request->_tempFile.close();
+        Serial.println("Resources Upload Complete: " + String(filename) + ", size: " + String(index + len));
+    }
 }
