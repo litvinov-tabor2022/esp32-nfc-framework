@@ -125,7 +125,7 @@ SkillsIterator SkillsList::getSkillsPageStart(u8 pageNo, u8 pageSize) {
 
     if (end > skillsList.size() && skillsList.size() > pageSize) {
         end = skillsList.size() - 1;
-        start = max(end - pageSize, 0);
+        start = max(end - pageSize + 1, 0);
     }
 
     return skillsList.cbegin() + start;
