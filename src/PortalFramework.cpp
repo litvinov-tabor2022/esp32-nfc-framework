@@ -67,7 +67,7 @@ std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
         reader->checkTagPresented();
     });
 
-    if (!AccessPoint::start(deviceConfig.apSSID.c_str(), deviceConfig.apPass.c_str())) {
+    if (!ap.start(deviceConfig.apSSID.c_str(), deviceConfig.apPass.c_str())) {
         Debug.println("Could not start AP!");
         return std::optional("Could not start AP!");
     }

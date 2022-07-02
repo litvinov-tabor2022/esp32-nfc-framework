@@ -3,13 +3,14 @@
 
 #include <mutex>
 #include <WebServer.h>
+#include "AccessPoint.h"
 
 struct DeviceConfig;
 struct FrameworkConfig;
 
 class SynchronizationMode {
 public:
-    explicit SynchronizationMode(WebServer *webServer, FrameworkConfig *frameworkConfig, DeviceConfig *deviceConfig);
+    explicit SynchronizationMode(WebServer *webServer, AccessPoint *ap, FrameworkConfig *frameworkConfig, DeviceConfig *deviceConfig);
 
     bool start();
 
@@ -25,6 +26,7 @@ private:
     bool started;
 
     WebServer *webServer;
+    AccessPoint *ap;
     FrameworkConfig *frameworkConfig;
     DeviceConfig *deviceConfig;
 };

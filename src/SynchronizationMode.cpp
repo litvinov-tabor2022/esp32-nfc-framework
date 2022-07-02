@@ -11,8 +11,7 @@ bool SynchronizationMode::start() {
     started = true;
 
     webServer->start();
-    return AccessPoint::stop() &&
-           WifiClient::connect(this->frameworkConfig->syncSSID.c_str(), this->frameworkConfig->syncPass.c_str(), timeout);
+    return ap->stop() && WifiClient::connect(this->frameworkConfig->syncSSID.c_str(), this->frameworkConfig->syncPass.c_str(), timeout);
 }
 
 bool SynchronizationMode::stop() {
@@ -20,11 +19,12 @@ bool SynchronizationMode::stop() {
     started = false;
 
     webServer->stop();
-    return WifiClient::disconnect() && AccessPoint::start(this->deviceConfig->apSSID.c_str(), this->deviceConfig->apPass.c_str());
+    return WifiClient::disconnect() && ap->start(this->deviceConfig->apSSID.c_str(), this->deviceConfig->apPass.c_str());
 }
 
-SynchronizationMode::SynchronizationMode(WebServer *webServer, FrameworkConfig *frameworkConfig, DeviceConfig *deviceConfig) :
-        webServer(webServer), frameworkConfig(frameworkConfig), deviceConfig(deviceConfig) {}
+SynchronizationMode::SynchronizationMode(WebServer *webServer, AccessPoint *ap, FrameworkConfig *frameworkConfig,
+                                         DeviceConfig *deviceConfig) :
+        webServer(webServer), frameworkConfig(frameworkConfig), deviceConfig(deviceConfig), ap(ap) {}
 
 bool SynchronizationMode::toggle() {
     if (started) { return stop(); } else { return start(); }

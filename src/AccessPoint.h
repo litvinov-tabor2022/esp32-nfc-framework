@@ -4,11 +4,15 @@
 #include <debugging.h>
 #include <Tasker.h>
 #include <DNSServer.h>
+#include <mutex>
 
 class AccessPoint {
 public:
-    static bool start(const char *ssid, const char *password);
-    static bool stop();
+    bool start(const char *ssid, const char *password);
+    bool stop();
+private:
+    std::mutex switchMutex;
+    bool started = false;
 };
 
 #endif //ESP32NFC_ACCESSPOINT

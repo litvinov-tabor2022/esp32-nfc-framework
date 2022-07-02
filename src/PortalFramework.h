@@ -60,7 +60,7 @@ public:
 
     Storage storage;
     Resources resources = Resources(&storage);
-    SynchronizationMode synchronizationMode = SynchronizationMode(&webServer, &frameworkConfig, &deviceConfig);
+    SynchronizationMode synchronizationMode = SynchronizationMode(&webServer, &ap, &frameworkConfig, &deviceConfig);
 
     u64 getCurrentTime();
     void setCurrentTime(u64 unixSecs);
@@ -85,6 +85,7 @@ private:
     MFRCTagReader *reader;
     Clocks clocks;
     WebServer webServer = WebServer(this);
+    AccessPoint ap = AccessPoint();
 
     DeviceConfig deviceConfig;
     FrameworkConfig frameworkConfig;

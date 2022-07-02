@@ -2,6 +2,9 @@
 #include <AccessPoint.h>
 
 bool AccessPoint::start(const char *ssid, const char *password) {
+    std::lock_guard<std::mutex> lg(switchMutex);
+    started = true;
+
     WiFi.disconnect(false, true); // for case it was configured as wifi client in last run...
     WiFiClass::mode(WIFI_MODE_AP);
 
@@ -22,6 +25,11 @@ bool AccessPoint::start(const char *ssid, const char *password) {
 }
 
 bool AccessPoint::stop() {
+    std::lock_guard<std::mutex> lg(switchMutex);
+    if (!started) return true;
+
+    started = false;
+
     Debug.println("AP stopping");
     WiFi.disconnect(false, true); // can fail
 
