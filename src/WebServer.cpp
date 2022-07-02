@@ -44,8 +44,10 @@ WebServer::WebServer(PortalFramework *framework) {
         request->send(response);
     });
 
-    webServer->on("/upload/resources", HTTP_POST, [](AsyncWebServerRequest *request) {
-        Debug.println("Handling POST /upload/resources");
+    webServer->serveStatic("/resources", SPIFFS, "/resources");
+
+    webServer->on("/resources", HTTP_POST, [](AsyncWebServerRequest *request) {
+        Debug.println("Handling POST upload of /resources");
         request->send(200);
     }, handleResourcesUpload);
 
