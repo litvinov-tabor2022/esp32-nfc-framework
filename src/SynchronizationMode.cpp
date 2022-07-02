@@ -10,8 +10,13 @@ bool SynchronizationMode::start() {
     std::lock_guard<std::mutex> lg(switchMutex);
     started = true;
 
+    if (!(ap->stop() && WifiClient::connect(this->frameworkConfig->syncSSID.c_str(), this->frameworkConfig->syncPass.c_str(), timeout))) {
+        Serial.println("Could not start wifi client");
+        return false;
+    }
     webServer->start();
-    return ap->stop() && WifiClient::connect(this->frameworkConfig->syncSSID.c_str(), this->frameworkConfig->syncPass.c_str(), timeout);
+
+    return true;
 }
 
 bool SynchronizationMode::stop() {
@@ -24,7 +29,7 @@ bool SynchronizationMode::stop() {
 
 SynchronizationMode::SynchronizationMode(WebServer *webServer, AccessPoint *ap, FrameworkConfig *frameworkConfig,
                                          DeviceConfig *deviceConfig) :
-        webServer(webServer), frameworkConfig(frameworkConfig), deviceConfig(deviceConfig), ap(ap) {}
+        webServer(webServer), ap(ap), frameworkConfig(frameworkConfig), deviceConfig(deviceConfig) {}
 
 bool SynchronizationMode::toggle() {
     if (started) { return stop(); } else { return start(); }
