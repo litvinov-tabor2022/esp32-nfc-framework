@@ -123,12 +123,16 @@ SkillsIterator SkillsList::getSkillsPageStart(u8 pageNo, u8 pageSize) {
     u8 start = pageNo * pageSize;
     u8 end = start + pageSize - 1;
 
-    if (end > skillsList.size()) {
+    if (end > skillsList.size() && skillsList.size() > pageSize) {
         end = skillsList.size() - 1;
         start = max(end - pageSize, 0);
     }
 
     return skillsList.cbegin() + start;
+}
+
+SkillsIterator SkillsList::getAll() {
+    return skillsList.cbegin();
 }
 
 SkillsList::SkillsList(std::vector<SkillsListEntry> skillsList) : skillsList(std::move(skillsList)) {}

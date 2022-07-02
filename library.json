@@ -1,6 +1,6 @@
 {
   "name": "ESP32 Portal framework",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Framework for all Portal-like devices",
   "keywords": "nfc,tag,reader,esp32",
   "repository": {

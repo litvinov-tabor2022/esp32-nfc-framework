@@ -87,6 +87,7 @@ public:
     explicit SkillsList(std::vector<SkillsListEntry> skillsList);
 
     SkillsIterator getSkillsPageStart(u8 pageNo, u8 pageSize);
+    SkillsIterator getAll();
 
     [[nodiscard]] u8 getLength() const { return skillsList.size(); }
 
