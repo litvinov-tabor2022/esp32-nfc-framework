@@ -11,6 +11,26 @@
 byte rawTagData[BUFFER_SIZE];
 
 std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
+    if (!storage.begin()) {
+        Debug.println("Could not initialize transactions log!");
+        return std::optional("Could not initialize transactions log!");
+    }
+
+    if (!resources.begin()) {
+        Debug.println("Could not load resources!");
+        return std::optional("Could not load resources!");
+    }
+
+    if (!loadDeviceConfig()) {
+        Debug.println("Could not load device config!");
+        return std::optional("Could not load device config!");
+    }
+
+    if (!loadFrameworkConfig()) {
+        Debug.println("Could not load framework config!");
+        return std::optional("Could not load framework config!");
+    }
+
     {
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
 
@@ -30,26 +50,6 @@ std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
             Debug.println("Could not initialize RTC!");
             return std::optional("Could not initialize RTC!");
         }
-    }
-
-    if (!storage.begin()) {
-        Debug.println("Could not initialize transactions log!");
-        return std::optional("Could not initialize transactions log!");
-    }
-
-    if (!resources.begin()) {
-        Debug.println("Could not load resources!");
-        return std::optional("Could not load resources!");
-    }
-
-    if (!loadDeviceConfig()) {
-        Debug.println("Could not load device config!");
-        return std::optional("Could not load device config!");
-    }
-
-    if (!loadFrameworkConfig()) {
-        Debug.println("Could not load framework config!");
-        return std::optional("Could not load framework config!");
     }
 
     reader->addOnConnectCallback([this](const byte *uid) {
