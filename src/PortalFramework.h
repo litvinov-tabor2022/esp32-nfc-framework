@@ -42,7 +42,7 @@ class PortalFramework {
 
 public:
     // None if no error
-    std::optional<std::string> begin(bool ignoreRTCFailure = false);
+    std::optional<std::string> begin(bool ignoreRTCFailure = false, bool supportSyncMode = true);
 
     void addOnConnectCallback(const std::function<void(PlayerData, bool)> &callback) { tagConnectedCallbacks.push_back(callback); }
 
@@ -63,6 +63,7 @@ public:
     SynchronizationMode synchronizationMode = SynchronizationMode(&webServer, &ap, &frameworkConfig, &deviceConfig);
 
     u64 getCurrentTime();
+
     void setCurrentTime(u64 unixSecs);
 
 private:

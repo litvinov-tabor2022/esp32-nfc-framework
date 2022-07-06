@@ -10,7 +10,7 @@
 #define BUFFER_SIZE 32 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
-std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
+std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure, bool supportSyncMode) {
     if (!storage.begin()) {
         Debug.println("Could not initialize transactions log!");
         return std::optional("Could not initialize transactions log!");
@@ -67,9 +67,13 @@ std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure) {
         reader->checkTagPresented();
     });
 
-    if (!ap.start(deviceConfig.apSSID.c_str(), deviceConfig.apPass.c_str())) {
-        Debug.println("Could not start AP!");
-        return std::optional("Could not start AP!");
+    if (supportSyncMode) {
+        if (!ap.start(deviceConfig.apSSID.c_str(), deviceConfig.apPass.c_str())) {
+            Debug.println("Could not start AP!");
+            return std::optional("Could not start AP!");
+        }
+    } else {
+        Debug.println("Synchronization mode is turned off, NOT starting wifi");
     }
 
     return std::nullopt;
