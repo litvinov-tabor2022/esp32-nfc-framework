@@ -6,7 +6,9 @@
 #include "debugging.h"
 
 bool Storage::appendTransaction(const Transaction &transaction) {
-    Debug.printf("Appending transaction: time %llu, user_id %d\n", transaction.time, transaction.user_id);
+    Debug.printf("Appending transaction: time %llu, user_id %d [s = %d, d = %d, m = %d, bp = %d, sk = %d]\n",
+                 transaction.time, transaction.user_id, transaction.strength, transaction.dexterity, transaction.magic,
+                 transaction.bonus_points, transaction.skill);
 
     StaticJsonDocument<256> doc;
 

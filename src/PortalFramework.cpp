@@ -121,7 +121,7 @@ bool PortalFramework::initializeTag() {
     return true;
 }
 
-bool PortalFramework::writePlayerData(_portal_PlayerData &playerData) {
+bool PortalFramework::writePlayerData(const _portal_PlayerData &playerData) {
     pb_ostream_t os = pb_ostream_from_buffer(rawTagData, BUFFER_SIZE);
 
     if (!pb_encode_delimited(&os, portal_PlayerData_fields, &playerData)) {

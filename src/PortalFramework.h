@@ -54,7 +54,7 @@ public:
 
     bool initializeTag();
 
-    bool writePlayerData(PlayerData &playerData);
+    bool writePlayerData(const PlayerData &playerData);
 
     DeviceConfig &getDeviceConfig() { return deviceConfig; }
 
