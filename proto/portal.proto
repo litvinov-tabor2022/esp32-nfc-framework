@@ -9,13 +9,41 @@ message PlayerData {
   required uint32 magic = 4;
   required uint32 dexterity = 5;
   required uint32 bonus_points = 6;
-  repeated Skill skills = 10;
+  repeated Skill skills = 40;
 }
 
 enum Skill {
   Skill_Default = 0;
-  Skill_Climbing = 1;
-  Skill_LockPicking = 2;
-
-  Magic_Fire = 101;
+  Lecive_kouzlo = 1;
+  Michani_lektvaru = 2;
+  Kouzlo_sily = 3;
+  Kouzlo_obratnosti = 4;
+  Obranne_kouzlo = 5;
+  Strileni_z_luku = 6;
+  Kouzlo_penez = 7;
+  Kouzlo_jidla = 8;
+  Odemykani_zamku = 9;
+  Pametove_kouzlo = 10;
+  Kouzlo_zmenseni = 11;
+  Hod_sekerou_na_spalek = 12;
+  Kouzlo_stesti = 13;
+  Kouzlo_ticha = 14;
+  Poznavacka_rostlin_a_stromu = 15;
+  Kouzlo_dychani_pod_vodou = 16;
+  Kouzlo_videni_do_budoucnosti = 17;
+  Poznavacka_zvirat = 18;
+  Kouzlo_neviditelnosti = 19;
+  Kouzlo_zrychleni = 20;
+  Plavani = 21;
+  Skutecne_videni = 22;
+  Kouzlo_zpomaleni_casu = 23;
+  Vareni = 24;
+  Kouzlo_svetla = 25;
+  Kouzlo_mapovani_oblasti = 26;
+  Kouzlo_nadbytku = 27;
+  Kouzlo_teleportace = 28;
+  Sifry = 29;
+  Kouzlo_odvahy = 30;
+  Rozdelani_ohne = 31;
+  Lezeni_po_skalach = 32;
 }
