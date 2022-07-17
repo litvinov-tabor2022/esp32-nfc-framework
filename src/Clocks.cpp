@@ -1,9 +1,21 @@
 #include "Clocks.h"
 #include "HwLocks.h"
+#include "Tasker.h"
 
 u64 Clocks::getCurrentTime() {
     std::lock_guard<std::mutex> lg(HwLocks::I2C);
-    return rtc.now().unixtime();
+    auto time = rtc.now();
+    u64 timeUnix = time.unixtime();
+
+    while (time.year() != 2022 || time.month() != 7 || timeUnix <= lastTimestamp) {
+        Debug.printf("Invalid timestamp returned (%llu), retrying\n", timeUnix);
+        time = rtc.now();
+        timeUnix = time.unixtime();
+        Tasker::sleep(100);
+    }
+
+    lastTimestamp = timeUnix;
+    return timeUnix;
 }
 
 bool Clocks::begin() {

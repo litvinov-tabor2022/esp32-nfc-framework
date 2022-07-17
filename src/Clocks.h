@@ -14,6 +14,8 @@ public:
 private:
     void printCurrentTime();
 
+    u64 lastTimestamp = 0;
+
     RTC_DS1307 rtc;
 };
 
