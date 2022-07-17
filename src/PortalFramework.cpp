@@ -122,6 +122,26 @@ bool PortalFramework::initializeTag() {
 }
 
 bool PortalFramework::writePlayerData(const _portal_PlayerData &playerData) {
+    // First, let's check all values are sane.
+    // I curse unsigned types in C++ here at this place.
+    if (playerData.strength < 0 || playerData.strength > 200) {
+        Debug.println("Could not decrease strength under 0!");
+        return false;
+    }
+    if (playerData.magic < 0 || playerData.magic > 200) {
+        Debug.println("Could not decrease magic under 0!");
+        return false;
+    }
+    if (playerData.dexterity < 0 || playerData.dexterity > 200) {
+        Debug.println("Could not decrease dexterity under 0!");
+        return false;
+    }
+    if (playerData.bonus_points < 0 || playerData.bonus_points > 200) {
+        Debug.println("Could not decrease bonus points under 0!");
+        return false;
+    }
+    // everything OK, let's go ahead
+
     pb_ostream_t os = pb_ostream_from_buffer(rawTagData, BUFFER_SIZE);
 
     if (!pb_encode_delimited(&os, portal_PlayerData_fields, &playerData)) {
