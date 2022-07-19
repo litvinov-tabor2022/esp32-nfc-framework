@@ -123,10 +123,15 @@ SkillsIterator SkillsList::getSkillsPageStart(u8 pageNo, u8 pageSize) {
     u8 start = pageNo * pageSize;
     u8 end = start + pageSize - 1;
 
-    if (end > skillsList.size() && skillsList.size() > pageSize) {
+    // Serial.printf("BEF start: %d, end: %d\n", start, end);
+
+    // if end is after total end, but ONLY if total size is bigger than a single page (otherwise it doesn't make sense...)
+    if (end >= skillsList.size() && skillsList.size() > pageSize) {
         end = skillsList.size() - 1;
         start = max(end - pageSize + 1, 0);
     }
+
+    // Serial.printf("AFT start: %d, end: %d\n", start, end);
 
     return skillsList.cbegin() + start;
 }
