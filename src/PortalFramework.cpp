@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#define BUFFER_SIZE 32 // don't have this uselessly big
+#define BUFFER_SIZE 64 // don't have this uselessly big
 byte rawTagData[BUFFER_SIZE];
 
 std::optional<std::string> PortalFramework::begin(bool ignoreRTCFailure, bool supportSyncMode) {
