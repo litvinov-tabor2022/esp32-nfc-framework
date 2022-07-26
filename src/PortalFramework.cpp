@@ -84,7 +84,17 @@ void PortalFramework::handleConnectedTag(const String &uid) {
     Debug.printf("Handling new connected tag, UID %s\n", uid.c_str());
 
     PlayerData playerData = portal_PlayerData_init_zero;
-    if (readPlayerData(&playerData)) {
+
+    bool pretendAdmin = false;
+
+    // suffix of wristwatch code
+    if (uid.endsWith("80fb3f1480fb2020190000ff") || uid.endsWith("fb3f1400fb2020190000ff")) {
+        pretendAdmin = true;
+        playerData.user_id = ADMIN_USER_ID;
+        Debug.println("Pretending it's an admin tag!");
+    }
+
+    if (pretendAdmin || readPlayerData(&playerData)) {
         if (reader->isTagConnected()) {
             for (auto &callback: tagConnectedCallbacks) callback(playerData, false);
         } else {
